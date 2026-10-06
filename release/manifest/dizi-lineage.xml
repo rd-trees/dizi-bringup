@@ -9,7 +9,7 @@
   Drop the vendor/gapps project for a build without GApps.
 -->
 <manifest>
-  <remote name="dizi" fetch="https://github.com/g8row" />
+  <remote name="dizi" fetch="https://github.com/rd-trees" />
   <remote name="evo-devices" fetch="https://github.com/Evolution-X-Devices" />
   <remote name="github-non-los" fetch="https://github.com" />
   <remote name="mtg" fetch="https://github.com/MindTheGapps" />

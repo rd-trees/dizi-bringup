@@ -6,7 +6,7 @@
     source build/envsetup.sh && lunch lineage_dizi-cp2a-user && m evolution
 -->
 <manifest>
-  <remote name="dizi" fetch="https://github.com/g8row" />
+  <remote name="dizi" fetch="https://github.com/rd-trees" />
 
   <!-- Device (branch cnb: bka-dizi + garnet's cnb changes: FCM 7, 64-bit only, legacy libion) -->
   <project path="device/xiaomi/dizi" name="device_xiaomi_dizi" remote="dizi" revision="cnb" />

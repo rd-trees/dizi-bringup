@@ -6,7 +6,7 @@ Custom ROMs for the Redmi Pad Pro (dizi, SM7435 "parrot", Wi-Fi only):
 - **LineageOS 23.2 with MindTheGapps (Android 16):** Trebuchet with blur/corner toggles.
 
 All three use the HyperOS **OS3.0.303.0.WNSEUXM** (EEA) vendor blobs and a source-built 5.10 GKI with the stock
-modules. The 5G model (ruan) is in [ruan-bringup](https://github.com/g8row/ruan-bringup).
+modules. The 5G model (ruan) is in [ruan-bringup](https://github.com/rd-trees/ruan-bringup).
 
 - **Build instructions:** [BUILDING.md](BUILDING.md).
 - **Install:** [release/INSTALL.md](release/INSTALL.md).

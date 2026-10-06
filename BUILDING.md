@@ -1,9 +1,9 @@
 # Building ROMs for the Redmi Pad Pro (dizi)
 
 There are three ROM lines. All of them use the same device tree (different branches of
-[device_xiaomi_dizi](https://github.com/g8row/device_xiaomi_dizi)), the HyperOS OS3.0.303.0 blobs from
-[vendor_xiaomi_dizi](https://github.com/g8row/vendor_xiaomi_dizi), and the kernel artefacts from
-[device_xiaomi_dizi-kernel](https://github.com/g8row/device_xiaomi_dizi-kernel).
+[device_xiaomi_dizi](https://github.com/rd-trees/device_xiaomi_dizi)), the HyperOS OS3.0.303.0 blobs from
+[vendor_xiaomi_dizi](https://github.com/rd-trees/vendor_xiaomi_dizi), and the kernel artefacts from
+[device_xiaomi_dizi-kernel](https://github.com/rd-trees/device_xiaomi_dizi-kernel).
 
 | ROM | Android | Manifest | Device branch | Lunch | Target |
 |---|---|---|---|---|---|
@@ -12,7 +12,7 @@ There are three ROM lines. All of them use the same device tree (different branc
 | LineageOS 23.2 + MindTheGapps | 16 | `https://github.com/LineageOS/android.git -b lineage-23.2` | `lineage-23.2` | `lineage_dizi-bp4a-user` | `m bacon` |
 
 The 5G model (ruan) is built on top of the dizi device tree: see
-[ruan-bringup](https://github.com/g8row/ruan-bringup).
+[ruan-bringup](https://github.com/rd-trees/ruan-bringup).
 
 ## 1. Sync
 
@@ -21,7 +21,7 @@ mkdir evox && cd evox
 repo init -u https://github.com/Evolution-X/manifest -b bka --git-lfs   # or -b cnb, or the Lineage manifest
 mkdir -p .repo/local_manifests
 curl -o .repo/local_manifests/dizi.xml \
-  https://raw.githubusercontent.com/g8row/dizi-bringup/main/release/manifest/dizi.xml   # bka
+  https://raw.githubusercontent.com/rd-trees/dizi-bringup/main/release/manifest/dizi.xml   # bka
 # cnb: release/manifest/dizi-cnb.xml, Lineage: release/manifest/dizi-lineage.xml
 repo sync -c -j8 --no-tags
 ```

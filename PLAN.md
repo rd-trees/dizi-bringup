@@ -28,7 +28,7 @@ item. Details and gotchas go in README.md, measurements in logs/, analysis in re
   - Ruled out, live: GPU clock, DDR clock, idle timer, SF phase offsets, GPU backpressure, blur, snapshot-scale config.
   - The Pixel Launcher prebuilt needs 9-16 ms of GPU per frame (p90-p95) in the transition.
   - The remaining lever is Launcher3 Quickstep from source (`evox/packages/apps/Launcher3`); the user hasn't decided.
-- **Published:** the six g8row repos; Telegram not yet.
+- **Published:** the rd-trees org repos; Telegram not yet.
 
 **Next up (in order):**
 0. Sign release-2, stage it, and the user sideloads it (dirty). Check Tap to wake and USB after a reboot without a replug.

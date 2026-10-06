@@ -6,7 +6,7 @@ Updated: <DATE>
 
 ▪️ **Download:** <LINK>
 ▪️ **Install guide:** <LINK to INSTALL.md>
-▪️ **Source:** https://github.com/g8row/device_xiaomi_dizi
+▪️ **Source:** https://github.com/rd-trees/device_xiaomi_dizi
 ▪️ **SHA256:**
 `<sha256>  EvolutionX-16.0-<DATE>-dizi-11.11-Unofficial-fastboot.zip`
 `<sha256>  EvolutionX-16.0-<DATE>-dizi-11.11-Unofficial.zip`
