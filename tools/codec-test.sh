@@ -4,6 +4,8 @@
 # c2.qti.* is Qualcomm hardware, c2.android.* is the software fallback. Also counts
 # decoder errors and dropped-frame hints.
 # Usage: tools/codec-test.sh <build-id>
+# PLAYER=<package> picks the player (default Files by Google); with several video apps
+# installed an unpinned VIEW intent stops at the chooser.
 set -uo pipefail
 . "$(dirname "$0")/env"
 R="$(dirname "$0")/remote.sh"
@@ -12,6 +14,7 @@ out=$DIZI_ROOT/logs/$id/codec-$(date +%H%M%S)
 mkdir -p "$out"
 a() { "$R" adb "$@" </dev/null 2>/dev/null | tr -d '\r'; }
 dev=/sdcard/Movies/codec
+player=${PLAYER:-com.google.android.apps.nbu.files}
 
 a shell "mkdir -p $dev"
 for f in h264-1080.mp4 hevc-1080.mp4 vp9-1080.webm av1-1080.mp4 h264-2160.mp4 hevc-2160.mp4 vp9-2160.webm av1-2160.mp4; do
@@ -24,10 +27,10 @@ trap '"$(dirname "$0")/remote.sh" adb shell svc power stayon false </dev/null >/
 for f in h264-1080.mp4 hevc-1080.mp4 vp9-1080.webm av1-1080.mp4 h264-2160.mp4 hevc-2160.mp4 vp9-2160.webm av1-2160.mp4; do
 	mime=video/mp4; [[ $f == *.webm ]] && mime=video/webm
 	a logcat -c
-	a shell "am start -W -a android.intent.action.VIEW -d file://$dev/$f -t $mime" >/dev/null
+	a shell "am start -W -a android.intent.action.VIEW -d file://$dev/$f -t $mime -p $player" >/dev/null
 	sleep 7
 	a logcat -d > "$out/$f.log"
-	comp=$(grep -oE 'c2\.(qti|android|google)\.[a-z0-9.]+\.decoder[a-z.]*' "$out/$f.log" | sort -u | tr '\n' ' ')
+	comp=$(grep -oE 'c2\.(qti|android|google)\.[a-z0-9.-]+\.decoder[a-z.]*' "$out/$f.log" | sort -u | tr '\n' ' ')
 	errs=$(grep -ciE 'CCodec.*(error|fail)|MediaCodec.*error|Codec2.*error' "$out/$f.log")
 	printf '%-16s decoder: %-40s errors: %s\n' "$f" "${comp:-none seen}" "$errs" | tee -a "$out/summary.txt"
 	a shell 'input keyevent HOME'
