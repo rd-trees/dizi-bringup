@@ -19,6 +19,9 @@ patch, smoother transitions, and a pen that now does pressure and hover properly
 - **Video inside apps looks right.** Instagram Reels and other in-app players that decode video in
   software (all AV1 on this tablet, and some VP8/VP9) showed coloured stripes and garbled frames. The
   GPU driver is updated to Adreno V@0863.1, which draws these frames correctly.
+- **Smooth playback with "Hey Google" on.** With Voice Match enabled, any video or music made the
+  audio service restart every few seconds, so video stuttered. "Hey Google" now keeps listening on the
+  low-power microphone path while media plays, and the audio service stays up.
 - **Redmi Smart Pen:**
   - **Pressure sensitivity** works. The pen sends its pressure over Bluetooth, and the ROM now feeds
     it to the touch driver as HyperOS does.
