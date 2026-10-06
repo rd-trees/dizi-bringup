@@ -49,7 +49,7 @@ source build/envsetup.sh >/dev/null 2>&1
 # The tree's release config (bp4a on 16/bka, cp2a on 17/cnb).
 release=$(sed -n "s/^aosp_target_release=//p" vendor/lineage/vars/aosp_target_release 2>/dev/null)
 lunch "lineage_$DIZI_DEVICE-${release:-bp4a}-$variant" >/dev/null 2>&1 || { echo "lunch failed"; exit 1; }
-m $targets -j48 > "$DIZI_ROOT/logs/$name.log" 2>&1
+m $targets -j${DIZI_JOBS:-48} > "$DIZI_ROOT/logs/$name.log" 2>&1
 rc=$?
 echo "exit=$rc" >> "$DIZI_ROOT/logs/$name.log"
 grep -E '^FAILED:|error:' "$DIZI_ROOT/logs/$name.log" | head -20

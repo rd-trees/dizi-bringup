@@ -11,6 +11,9 @@
 #   the release out dir's.
 set -euo pipefail
 . "$(dirname "$0")/env"
+# The OTA step writes several 3 GB temporaries; the host's /tmp is a shared tmpfs and ran out.
+export TMPDIR=${TMPDIR:-$DIZI_ROOT/tmp/sign}
+mkdir -p "$TMPDIR"
 E=$DIZI_ROOT/$DIZI_TREE
 if [[ -n ${SIGN_BENCH:-} ]]; then
 	OUTR=$E/$DIZI_OUT_NAME
