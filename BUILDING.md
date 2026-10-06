@@ -42,9 +42,26 @@ The device tree carries the patches it needs in `device/xiaomi/dizi/patches/<pro
 | `system/core`: keep `/data/resource-cache` on upgrade (EvoX's init wipes it and races the overlay manager) | yes | fixed upstream | not needed (no wipe) |
 | `build/make`: releasetools accepts a target-files zip (signing crashes without it) | yes | fixed upstream | yes |
 | `frameworks/native`: realtime Vulkan queue priority for RenderEngine | yes | yes | yes |
+| `frameworks/native`: mark SystemUI's screen decoration as an RC mask (`ro.sf.screen_decor_mask`) | - | yes | - |
+| `frameworks/native`: GPU floor for all client composition (`ro.sf.gpu_composition_boost`) | - | yes | - |
+| `frameworks/base`: SystemUI draws the corners as a hardware RC mask | - | yes | - |
+| `frameworks/base`: ImageWallpaper redraws when the transform hint changes | - | yes | - |
 | `vendor/lineage`: kernel out dir for a relative `OUT_DIR` (release builds) | yes | yes | yes |
-| `vendor/gms`: CrossDeviceAccessServicePrimary uses-library | yes | if it still fails | n/a |
+| `vendor/gms`: CrossDeviceAccessServicePrimary uses-library | yes | fixed upstream | n/a |
 | `packages/apps/Launcher3` (Lineage branch only): the swipe-home crash fix, and the Visual effects toggles | - | - | yes |
+
+The cnb frameworks patches go together with the device tree's `ro.sf.*` properties; without them the
+properties do nothing.
+
+**cnb, Wallpaper & style:** the DP11 GMS drop's picker needs framework code (`ClockManager`) this build
+doesn't have yet and crashes, taking the launcher down with it at boot. Use the previous drop's picker:
+
+```sh
+cd vendor/gms
+f=system_ext/packages/privileged_apps/WallpaperPickerGoogleRelease/WallpaperPickerGoogleRelease.apk
+git fetch evo 0c718e01bf50172a8b87765d5bc3628b1e43341f   # gms: Update from mustang CP3A.260905.009
+git checkout FETCH_HEAD -- $f && git lfs pull --include="$f"
+```
 
 ## 3. Build
 
