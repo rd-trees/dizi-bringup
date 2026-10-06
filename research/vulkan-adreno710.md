@@ -308,3 +308,33 @@ GL 5.02% / 4.39% (stock V@0615.98: 4.84-5.06%). Graphite 4.69% / 4.68% (p95 18-1
 App sweep 0 crashes. The gain is within run-to-run noise, so it isn't shipped: we keep the stock driver
 matched to the stock a710 firmware. Graphite keeps a slight p95 edge, still a candidate (needs the
 surfaceflinger property dontaudit plus video/DRM checks).
+
+### Driver sources survey (2026-10-05)
+
+Driver versions read from `vendor/lib64/egl/libGLESv2_adreno.so` in the newest dumps.tadiphone.dev branch of each
+device:
+
+| Device (SoC, kernel) | Build | Driver |
+|---|---|---|
+| Redmi garnet (SM7435, 5.10) | OS3.0.2.0 (A16) | V@0615.99 (07/25/25) |
+| Redmi dizi (SM7435, 5.10) | OS2.0.3.0 (A15) | V@0615.92 (11/26/24) |
+| Redmi ruan (SM7435, 5.10) | OS2.0.2.0 | V@0615.91 |
+| Motorola cusco (SM7435, 5.10) | V1UU35H (A15) | V@0615.88 |
+| Honor parrot (SM7435, 5.10) | 2024-12 | V@0615.88 |
+| Nothing pong (SM8475, 5.10) | 2026-06 (A16) | V@0615.98, the same as ours |
+| POCO peridot (SM8635, 6.1) | OS3.0.6.0 | V@0762.36.1 (12/22/25), and it ships `com.qualcomm.qti.gpudrivers.pineapple.api34.apk` in vendor/app |
+| Meta greatwhite (XR "neo", A740, 5.10) | UKQ1.241029.001 | V@0814.0 (01/29/25) |
+
+- **OEMs on 5.10 kernels stop at the 0615 branch.** V@0615.99 (garnet, tested on b29: noise) is the newest from any
+  phone maker. Newer branches come from 6.1 devices (0762) or Meta's XR line (0814, 0863).
+- **Matrixx's V@0863.1** (vendor_xiaomi_garnet cd03ffe, 2026-05-25): "update GPU driver blobs from greatwhite
+  V@0863.1".
+  - greatwhite is a Meta XR device: platform `neo`, Adreno 740 (`a740v3_sqe.fw`), kernel 5.10.226, Android 14 on a
+    vendor 12 base. The public dump is an older build with V@0814.0.
+  - Its unified libgsl lists the Adreno 710. Being a Qualcomm build that runs on a 5.10 kgsl makes it the most
+    plausible newer-branch candidate for our 5.10 kernel, more so than 0762 (built against 6.1).
+- **Updatable driver package:** no SM7435 device ships one. Stock dizi and garnet have neither the prop nor the
+  package.
+  - The garnet ROM trees' `ro.gfx.driver.1` is copied from SM8650-class trees (`pineapple.api34`, 3 trees). Matrixx
+    invented a `parrot.api34`. Both name packages that aren't installed, so the prop does nothing.
+  - The only real package found is peridot's pineapple APK (V@0762.x, for 6.1 kernels).
