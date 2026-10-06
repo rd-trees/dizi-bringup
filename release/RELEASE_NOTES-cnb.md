@@ -16,6 +16,9 @@ patch, smoother transitions, and a pen that now does pressure and hover properly
     about 8%.
 - **Wallpaper keeps the right orientation** after rotating, after a restart and when booting in
   landscape.
+- **Video inside apps looks right.** Instagram Reels and other in-app players that decode video in
+  software (all AV1 on this tablet, and some VP8/VP9) showed coloured stripes and garbled frames. The
+  GPU driver is updated to Adreno V@0863.1, which draws these frames correctly.
 - **Redmi Smart Pen:**
   - **Pressure sensitivity** works. The pen sends its pressure over Bluetooth, and the ROM now feeds
     it to the touch driver as HyperOS does.
