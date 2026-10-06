@@ -1,0 +1,34 @@
+--- a/msm/sde/sde_hw_catalog.c
++++ b/msm/sde/sde_hw_catalog.c
+@@ -29,6 +29,16 @@
+ module_param(max_bw_high_kbps, uint, 0444);
+ MODULE_PARM_DESC(max_bw_high_kbps, "Override the max high bandwidth in kbps (0: devicetree)");
+ 
++/*
++ * Override qcom,sde-max-per-pipe-bw-kbps (and -high) for every SSPP. The driver only reports the
++ * value to the display HAL (plane caps "max_per_pipe_bw"); SDM uses it to decide whether two
++ * layers may share a pipe (multirect parallel fetch). 0 keeps the devicetree value. Set it on
++ * the kernel command line, e.g. msm_drm.max_per_pipe_bw_kbps=4500000.
++ */
++static uint max_per_pipe_bw_kbps;
++module_param(max_per_pipe_bw_kbps, uint, 0444);
++MODULE_PARM_DESC(max_per_pipe_bw_kbps, "Override the max per-pipe bandwidth in kbps (0: devicetree)");
++
+ /*************************************************************
+  * MACRO DEFINITION
+  *************************************************************/
+@@ -1986,6 +1996,14 @@
+ 		else
+ 			sblk->max_per_pipe_bw_high = sblk->max_per_pipe_bw;
+ 
++		if (max_per_pipe_bw_kbps) {
++			SDE_INFO("sspp %d max_per_pipe_bw %u/%u kbps overridden to %u kbps\n", i,
++					sblk->max_per_pipe_bw, sblk->max_per_pipe_bw_high,
++					max_per_pipe_bw_kbps);
++			sblk->max_per_pipe_bw = max_per_pipe_bw_kbps;
++			sblk->max_per_pipe_bw_high = max_per_pipe_bw_kbps;
++		}
++
+ 		if (sde_cfg->has_ubwc_stats)
+ 			set_bit(SDE_SSPP_UBWC_STATS, &sspp->features);
+ 	}

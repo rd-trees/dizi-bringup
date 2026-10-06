@@ -1,0 +1,42 @@
+diff --git a/msm/sde/sde_hw_catalog.c b/msm/sde/sde_hw_catalog.c
+index d9ac735..562973a 100644
+--- a/msm/sde/sde_hw_catalog.c
++++ b/msm/sde/sde_hw_catalog.c
+@@ -10,6 +10,7 @@
+ #include <linux/platform_device.h>
+ #include <linux/soc/qcom/llcc-qcom.h>
+ #include <linux/pm_qos.h>
++#include <linux/moduleparam.h>
+ 
+ #include "sde_hw_mdss.h"
+ #include "sde_hw_catalog.h"
+@@ -18,6 +19,16 @@
+ #include "sde_hw_uidle.h"
+ #include "sde_connector.h"
+ 
++/*
++ * Experiment knob: override qcom,sde-max-bw-high-kbps. The value is reported to
++ * the display HAL (CRTC "max_bandwidth_high") and enforced by the core perf
++ * check. 0 keeps the devicetree value. Set it on the kernel command line, e.g.
++ * msm_drm.max_bw_high_kbps=8500000.
++ */
++static uint max_bw_high_kbps;
++module_param(max_bw_high_kbps, uint, 0444);
++MODULE_PARM_DESC(max_bw_high_kbps, "Override the max high bandwidth in kbps (0: devicetree)");
++
+ /*************************************************************
+  * MACRO DEFINITION
+  *************************************************************/
+@@ -4421,6 +4432,12 @@ static void _sde_perf_parse_dt_cfg_populate(struct sde_mdss_cfg *cfg,
+ 	if (!cfg->perf.max_bw_high)
+ 		cfg->perf.max_bw_high = DEFAULT_MAX_BW_HIGH;
+ 
++	if (max_bw_high_kbps) {
++		SDE_INFO("max_bw_high %u kbps overridden to %u kbps\n",
++				cfg->perf.max_bw_high, max_bw_high_kbps);
++		cfg->perf.max_bw_high = max_bw_high_kbps;
++	}
++
+ 	cfg->perf.min_core_ib =
+ 			prop_exists[PERF_MIN_CORE_IB] ?
+ 			PROP_VALUE_ACCESS(prop_value, PERF_MIN_CORE_IB, 0) :
