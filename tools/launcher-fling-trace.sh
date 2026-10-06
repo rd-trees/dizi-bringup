@@ -11,7 +11,8 @@ mkdir -p "$out"
 a() { "$R" adb "$@" </dev/null 2>/dev/null | tr -d '\r'; }
 dev=/data/misc/perfetto-traces/launcher-fling.pftrace
 
-a shell 'svc power stayon usb; input keyevent WAKEUP; wm dismiss-keyguard; settings put system accelerometer_rotation 0; settings put system user_rotation 1; input keyevent HOME'
+a shell 'svc power stayon true; input keyevent WAKEUP; wm dismiss-keyguard; settings put system accelerometer_rotation 0; settings put system user_rotation 1; input keyevent HOME'
+trap '"$(dirname "$0")/remote.sh" adb shell svc power stayon false </dev/null >/dev/null 2>&1' EXIT  # let the tablet idle (ART dexopt) again
 w=2560; h=1600; x=$((w / 2)); y1=$((h * 3 / 10)); y2=$((h * 8 / 10))
 sleep 2
 a shell "rm -f $dev"

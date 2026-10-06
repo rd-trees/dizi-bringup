@@ -18,7 +18,8 @@ for f in h264-1080.mp4 hevc-1080.mp4 vp9-1080.webm av1-1080.mp4 h264-2160.mp4 he
 	a push "$DIZI_REMOTE_DIR/codec/$f" "$dev/$f" >/dev/null
 done
 a shell "am broadcast -a android.intent.action.MEDIA_SCANNER_SCAN_FILE -d file://$dev" >/dev/null
-a shell 'svc power stayon usb; input keyevent WAKEUP; wm dismiss-keyguard; settings put system screen_brightness 10'
+a shell 'svc power stayon true; input keyevent WAKEUP; wm dismiss-keyguard; settings put system screen_brightness 10'
+trap '"$(dirname "$0")/remote.sh" adb shell svc power stayon false </dev/null >/dev/null 2>&1' EXIT  # let the tablet idle (ART dexopt) again
 
 for f in h264-1080.mp4 hevc-1080.mp4 vp9-1080.webm av1-1080.mp4 h264-2160.mp4 hevc-2160.mp4 vp9-2160.webm av1-2160.mp4; do
 	mime=video/mp4; [[ $f == *.webm ]] && mime=video/webm

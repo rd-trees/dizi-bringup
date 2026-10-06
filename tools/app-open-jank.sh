@@ -3,28 +3,47 @@
 # UI dump of home), wait for the launch animation, press HOME, repeat. The icon launch and the return
 # are launcher-driven remote animations, so launcher gfxinfo and the SF frame timeline both count.
 # Usage: tools/app-open-jank.sh <build-id> [cycles] [label]
+# Without a label, the first of "Play Store", Photos, Gallery, Settings found on home is used.
 set -uo pipefail
 . "$(dirname "$0")/env"
 R="$(dirname "$0")/remote.sh"
-id=${1:?build-id}; cycles=${2:-10}; label=${3:-Gallery}
+id=${1:?build-id}; cycles=${2:-10}; label=${3:-}
 out=$DIZI_ROOT/logs/$id/app-open-jank-$(date +%H%M%S)
 mkdir -p "$out"
 a() { "$R" adb "$@" </dev/null 2>/dev/null | tr -d '\r'; }
+. "$(dirname "$0")/check.sh"
+require_device
 . "$(dirname "$0")/apps.sh"
 
-a shell 'svc power stayon usb; input keyevent WAKEUP; wm dismiss-keyguard; settings put system accelerometer_rotation 0; settings put system user_rotation 1; input keyevent HOME'
+a shell 'svc power stayon true; input keyevent WAKEUP; wm dismiss-keyguard; settings put system accelerometer_rotation 0; settings put system user_rotation 1; input keyevent HOME'
 sleep 2
-xy=$(a shell 'uiautomator dump /data/local/tmp/app-open.xml >/dev/null; cat /data/local/tmp/app-open.xml' |
-	grep -o '<node [^>]*>' | grep -E "(text|content-desc)=\"$label\"" | head -1 |
-	sed -E 's/.*bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\1 \2 \3 \4/' |
-	awk '{print int(($1 + $3) / 2), int(($2 + $4) / 2)}')
-[[ -n $xy ]] || { echo "no '$label' icon on home" >&2; exit 1; }
+home=$(a shell 'uiautomator dump /data/local/tmp/app-open.xml >/dev/null; cat /data/local/tmp/app-open.xml' | grep -o '<node [^>]*>')
+icon() {
+	grep -E "(text|content-desc)=\"$1\"" <<<"$home" | head -1 |
+		sed -E 's/.*bounds="\[([0-9]+),([0-9]+)\]\[([0-9]+),([0-9]+)\]".*/\1 \2 \3 \4/' |
+		awk '{print int(($1 + $3) / 2), int(($2 + $4) / 2)}'
+}
+if [[ -z $label ]]; then
+	for l in "Play Store" Photos Gallery Settings; do
+		[[ -n $(icon "$l") ]] && { label=$l; break; }
+	done
+	[[ -n $label ]] || die "none of Play Store, Photos, Gallery, Settings is on the home screen; pass a label"
+fi
+xy=$(icon "$label")
+[[ -n $xy ]] || die "no '$label' icon on the home screen"
+echo "icon: $label at $xy" >&2
 a shell dumpsys SurfaceFlinger --timestats -disable -clear >/dev/null
 a shell dumpsys SurfaceFlinger --timestats -enable >/dev/null
 a shell dumpsys gfxinfo "$launcher" reset >/dev/null
+# Only the first cycle checks what opened: a dumpsys in every cycle would load system_server during
+# the measurement. A later failure shows up as a low launcher frame count.
 for ((i = 0; i < cycles; i++)); do
 	a shell "input tap $xy"
 	sleep 1.8
+	if ((i == 0)); then
+		top=$(top_package)
+		[[ -n $top && $top != "$launcher" ]] || { a shell 'input keyevent HOME'; die "tapping '$label' didn't open an app (top: ${top:-none})"; }
+	fi
 	a shell 'input keyevent HOME'
 	sleep 1.5
 done
@@ -45,3 +64,5 @@ a shell dumpsys SurfaceFlinger --timestats -disable >/dev/null
 		"$out/sf-timestats.txt" | sort -rn | head -6
 } | tee "$out/summary.txt"
 echo "results: $out"
+require_frames "$out/gfxinfo-launcher.txt" $((cycles * 100)) "launcher ($launcher)"
+require_timestats "$out/sf-timestats.txt"

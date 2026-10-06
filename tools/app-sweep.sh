@@ -11,7 +11,8 @@ a() { "$R" adb "$@" </dev/null 2>/dev/null | tr -d '\r'; }
 # Binary output (screenshots): no \r stripping.
 raw() { "$R" adb "$@" </dev/null 2>/dev/null; }
 
-a shell 'svc power stayon usb; input keyevent WAKEUP; wm dismiss-keyguard'
+a shell 'svc power stayon true; input keyevent WAKEUP; wm dismiss-keyguard'
+trap '"$(dirname "$0")/remote.sh" adb shell svc power stayon false </dev/null >/dev/null 2>&1' EXIT  # let the tablet idle (ART dexopt) again
 a shell 'cmd package query-activities --brief -a android.intent.action.MAIN -c android.intent.category.LAUNCHER' |
 	grep '/' | sed 's/^ *//' | sort -u > "$out/activities.txt"
 a logcat -c -b all

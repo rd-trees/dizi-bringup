@@ -22,7 +22,8 @@ for ((n = 1; n <= boots; n++)); do
 	for _ in $(seq 100); do booted && break; sleep 3; done
 	sleep 40
 	a root >/dev/null; sleep 5
-	a shell 'settings put system screen_brightness_mode 0; settings put system screen_brightness 10; svc power stayon usb; input keyevent WAKEUP; wm dismiss-keyguard; input keyevent BACK; input keyevent HOME'
+	a shell 'settings put system screen_brightness_mode 0; settings put system screen_brightness 10; svc power stayon true; input keyevent WAKEUP; wm dismiss-keyguard; input keyevent BACK; input keyevent HOME'
+	trap '"$(dirname "$0")/remote.sh" adb shell svc power stayon false </dev/null >/dev/null 2>&1' EXIT  # let the tablet idle (ART dexopt) again
 	mdp=$(a shell 'c=/sys/kernel/debug/clk/disp_cc_mdss_mdp_clk/clk_rate; (for i in $(seq 1 20); do cat $c; sleep 0.05; done > /data/local/tmp/mdp.txt &); input swipe 1280 2 1280 800 150; sleep 0.4; input swipe 1280 533 1280 1550 150; sleep 1; input keyevent BACK; sort /data/local/tmp/mdp.txt | uniq -c | tr "\n" " "')
 	dfps=$(a shell 'cat /sys/devices/virtual/mi_display/disp_feature/disp-DSI-0/dynamic_fps')
 	modes=$(a shell 'dmesg | grep -cE "dsi_display_set_mode"')

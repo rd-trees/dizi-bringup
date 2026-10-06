@@ -11,9 +11,11 @@ id=${1:?build-id}; cycles=${2:-10}; orient=${3:-landscape}
 out=$DIZI_ROOT/logs/$id/recents-open-jank-$orient-$(date +%H%M%S)
 mkdir -p "$out"
 a() { "$R" adb "$@" </dev/null 2>/dev/null | tr -d '\r'; }
+. "$(dirname "$0")/check.sh"
+require_device
 . "$(dirname "$0")/apps.sh"
 
-a shell 'svc power stayon usb; input keyevent WAKEUP; wm dismiss-keyguard; settings put system accelerometer_rotation 0'
+a shell 'svc power stayon true; input keyevent WAKEUP; wm dismiss-keyguard; settings put system accelerometer_rotation 0'
 if [[ $orient == portrait ]]; then a shell settings put system user_rotation 0
 else a shell settings put system user_rotation 1; fi
 
@@ -47,10 +49,20 @@ for ((i = 0; i < cycles; i++)); do
 	a shell 'input keyevent APP_SWITCH'      # home -> overview
 	sleep 1.5
 	xy=$(card "$t")                           # the dump is taken while overview is idle
-	if [[ -z $xy ]]; then echo "cycle $i: no $t card" >&2; a shell 'input keyevent HOME'; sleep 1.5; continue; fi
+	if [[ -z $xy ]]; then
+		a shell 'input keyevent HOME'
+		((opened == 0)) && die "cycle $i: no '$t' card in overview (RECENTS_TARGETS, or the warm-up apps didn't open)"
+		echo "cycle $i: no $t card" >&2; sleep 1.5; continue
+	fi
 	a shell "input tap $xy"                   # overview -> app
 	sleep 2
-	a shell "dumpsys activity activities | grep -m1 topResumedActivity" >> "$out/resumed.txt"
+	top=$(top_package)
+	echo "$t -> $top" >> "$out/resumed.txt"
+	if [[ $top == "$launcher" || -z $top ]]; then
+		a shell 'input keyevent HOME'
+		((opened == 0)) && die "cycle $i: tapping the '$t' card didn't open it (top: ${top:-none})"
+		echo "cycle $i: $t didn't open" >&2; sleep 1.5; continue
+	fi
 	opened=$((opened + 1))
 	a shell 'input keyevent HOME'            # app -> home
 	sleep 1.5
@@ -74,3 +86,6 @@ a shell dumpsys SurfaceFlinger --timestats -disable >/dev/null
 		"$out/sf-timestats.txt" | sort -rn | head -10
 } | tee "$out/summary.txt"
 echo "results: $out"
+require_frames "$out/gfxinfo-launcher.txt" $((opened * 50)) "launcher ($launcher)"
+require_timestats "$out/sf-timestats.txt"
+((opened == cycles)) || die "only $opened/$cycles cycles opened an app; numbers in $out are partial"

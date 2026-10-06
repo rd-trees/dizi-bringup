@@ -13,7 +13,8 @@ mkdir -p "$out"
 a() { "$R" adb "$@" </dev/null 2>/dev/null | tr -d '\r'; }
 . "$(dirname "$0")/apps.sh"
 
-a shell 'svc power stayon usb; input keyevent WAKEUP; wm dismiss-keyguard; settings put system accelerometer_rotation 0'
+a shell 'svc power stayon true; input keyevent WAKEUP; wm dismiss-keyguard; settings put system accelerometer_rotation 0'
+trap '"$(dirname "$0")/remote.sh" adb shell svc power stayon false </dev/null >/dev/null 2>&1' EXIT  # let the tablet idle (ART dexopt) again
 if [[ $orient == portrait ]]; then a shell settings put system user_rotation 0; w=1600; h=2560
 else a shell settings put system user_rotation 1; w=2560; h=1600; fi
 y=$((h / 2)); x1=$((w * 3 / 4)); x2=$((w / 4))

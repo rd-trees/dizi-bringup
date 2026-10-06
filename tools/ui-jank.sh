@@ -9,6 +9,8 @@ id=${1:?build-id}; flings=${2:-20}; orient=${3:-landscape}
 out=$DIZI_ROOT/logs/$id/ui-jank-$orient-$(date +%H%M%S)
 mkdir -p "$out"
 a() { "$R" adb "$@" </dev/null 2>/dev/null | tr -d '\r'; }
+. "$(dirname "$0")/check.sh"
+require_device
 . "$(dirname "$0")/apps.sh"
 
 # package|launch intent (am start args)
@@ -19,7 +21,7 @@ apps=(
 )
 
 # Fixed orientation, swipes scaled to the rotated screen (physical 1600x2560).
-a shell 'svc power stayon usb; input keyevent WAKEUP; wm dismiss-keyguard; settings put system accelerometer_rotation 0'
+a shell 'svc power stayon true; input keyevent WAKEUP; wm dismiss-keyguard; settings put system accelerometer_rotation 0'
 if [[ $orient == portrait ]]; then a shell settings put system user_rotation 0; w=1600; h=2560
 else a shell settings put system user_rotation 1; w=2560; h=1600; fi
 x=$((w / 2)); y1=$((h * 3 / 10)); y2=$((h * 8 / 10))
@@ -43,6 +45,8 @@ for entry in "${apps[@]}"; do
 		sleep 0.4
 	done
 	a shell dumpsys gfxinfo "$pkg" > "$out/gfxinfo-$pkg.txt"
+	# Chrome draws in its GPU process, so its hwui count is small; the layer timeline below covers it.
+	[[ $pkg == com.android.chrome ]] || require_frames "$out/gfxinfo-$pkg.txt" $((flings * 30)) "$pkg"
 	{
 		printf '%-40s ' "$pkg"
 		grep -E 'Total frames rendered|Janky frames:|50th percentile|90th percentile|95th percentile|99th percentile|Number Missed Vsync|Number Frame deadline missed|Number Slow UI thread|Number Slow issue draw' \
@@ -64,6 +68,7 @@ for ((i = 0; i < flings / 2; i++)); do
 	sleep 0.6
 done
 a shell dumpsys gfxinfo com.android.systemui > "$out/gfxinfo-systemui-qs.txt"
+require_frames "$out/gfxinfo-systemui-qs.txt" $((flings / 2 * 50)) "systemui (QS pulldown)"
 {
 	printf '%-40s ' "systemui (QS pulldown)"
 	grep -E 'Total frames rendered|Janky frames:|50th percentile|90th percentile|95th percentile|99th percentile|Number Missed Vsync|Number Frame deadline missed|Number Slow UI thread|Number Slow issue draw' \
@@ -73,6 +78,7 @@ a shell dumpsys gfxinfo com.android.systemui > "$out/gfxinfo-systemui-qs.txt"
 fi
 a shell dumpsys SurfaceFlinger --timestats -dump > "$out/sf-timestats.txt"
 a shell dumpsys SurfaceFlinger --timestats -disable >/dev/null
+require_timestats "$out/sf-timestats.txt"
 grep -E 'totalFrames|missedFrames|clientCompositionFrames|displayOnTime|jankPayload|totalTimelineFrames|jankyFrames|sfDeadlineMisses|appDeadlineMisses' \
 	"$out/sf-timestats.txt" | head -20 | tee -a "$out/summary.txt"
 # Chrome draws web content in its own GPU process, so hwui gfxinfo misses it: report
